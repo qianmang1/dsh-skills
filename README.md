@@ -14,14 +14,17 @@ Skill 是 AI 编码助手的能力扩展包：一个 `SKILL.md`（工作流 + �
 
 ## 安装方法
 
-将某个技能目录复制到助手运行时的用户级技能目录即可跨项目使用（以 CodeBuddy 为例）：
+将技能目录复制到 DSH 仓库的技能目录 **`.agents/skills/`** 下（与 `dsh-doc`、`dsh-prose-standard` 等内置技能同级），助手在 deepseek-harness 工作区内即可使用：
 
 ```sh
-# Windows
-Copy-Item -Recurse skills/dsh-hermes-plugin "$env:USERPROFILE\.codebuddy\skills\"
+# Windows（在 deepseek-harness checkout 根执行）
+Copy-Item -Recurse skills/dsh-hermes-plugin "C:\path\to\deepseek-harness\.agents\skills\"
+
+# Linux / macOS
+cp -r skills/dsh-hermes-plugin /path/to/deepseek-harness/.agents/skills/
 ```
 
-技能相互独立，无共享依赖。
+技能相互独立，无共享依赖。DSH 之外的助手运行时（如 CodeBuddy）有各自的用户级技能目录，复制过去同样可用。
 
 ## 技能使用
 
