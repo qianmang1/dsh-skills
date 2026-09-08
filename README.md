@@ -1,84 +1,58 @@
 # dsh-skills
 
-[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)（dsh）技能（Skill）仓库：收录面向 dsh 插件开发与日常使用的可复用技能工程。
+给 DeepSeek Harness（dsh）用的技能集合，目前有一个：
 
-## 什么是 Skill
-
-Skill 是 AI 编码助手的能力扩展包：一个 `SKILL.md`（工作流 + 约束）配以可选的知识库（`references/`）、工程模板（`assets/`）和可执行脚本（`scripts/`）。助手在对话中按需求自动触发对应 Skill，或显式点名使用。
-
-## 技能目录
-
-| 技能 | 说明 |
+| 技能 | 用途 |
 |---|---|
-| [`skills/dsh-hermes-plugin`](skills/dsh-hermes-plugin/SKILL.md) | 根据自然语言需求，自动生成符合 DeepSeek Harness 官方规范的完整、可分发、可直接部署的插件工程（插件框架为 vendored Cordis）。内置官方文档回查映射与版本纪律（当前快照 `c389f96bf3` / dsh 0.1.3-alpha.2） |
+| [dsh-hermes-plugin](skills/dsh-hermes-plugin/SKILL.md) | 说一句需求，自动生成符合 dsh 官方规范的完整插件工程（插件框架是 vendored Cordis）。知识库对应官方文档快照 `c389f96bf3`，dsh 0.1.3-alpha.2 |
 
-## 安装方法
+## 安装
 
-### DSH 技能发现优先级
+dsh 会按顺序扫描几个技能目录，rank 高的先被发现：
 
-DSH 的本地技能提供方按 rank 顺序扫描各根目录（rank 高者被发现）：
+| Rank | 位置 |
+|---|---|
+| 100 | `<projectRoot>/.dsh/skills` |
+| 200 | `<projectRoot>/.agents/skills` |
+| 300 | `Config.customSkillDirs` |
+| **400** | **`<dshHome>/skills`**，即 `C:\Users\<用户名>\.dsh`（或 `~/.dsh`） |
+| **500** | **`<agentsHome>/skills`**，即 `~/.agents` |
+| 600 | `Config.bundledSkillDir` |
 
-| Rank | Source | Root |
-|---|---|---|
-| 100 | project-dsh | `<projectRoot>/.dsh/skills` |
-| 200 | project-agents | `<projectRoot>/.agents/skills` |
-| 300 | custom | `Config.customSkillDirs` |
-| **400** | **user-dsh** | **`<dshHome>/skills`** |
-| **500** | **user-agents** | **`<agentsHome>/skills`** |
-| 600 | bundled | 配置了 `Config.bundledSkillDir` 时使用 |
+装到 400 或 500 都能跨项目使用，`.dsh` 和 `.agents` 选一个就够了。装进 deepseek-harness 仓库自己的 `.agents/skills/`（rank 200）只在那个项目里生效。
 
-项目根为包含 `.git` 的最近祖先目录；用户级 DSH 根会跳过其 `.system` 子目录。推荐安装到**用户级**两处（跨项目可用）：rank 400 `user-dsh` 或 rank 500 `user-agents`。**每个目标各一条命令，互不混杂。**
+安装器默认把仓库里所有技能都装到目标目录，重跑只更新有变化的（没变化的直接跳过，不会留下一堆 `.bak`）。只想装某一个，加 `--skill <名称>`。目标位置可以用 `DSH_HOME` / `AGENTS_HOME` 环境变量改。
 
-所有安装途径均为「暂存区先下载校验、成功后才替换」的安全顺序，**默认全量安装**：一条命令把仓库 `skills/` 下所有技能装入目标目录，逐个校验 → 备份 → 替换；与已装版本内容一致时自动跳过（不堆积备份），结束输出摘要（新增/更新/跳过清单）。想只装某一个：`--skill <名称>`（脚本方式传位置参数或 `-Skill`）。默认路径：`.dsh` → Windows `C:\Users\<用户名>\.dsh` / Linux·macOS `~/.dsh`；`.agents` → `~/.agents`（`DSH_HOME` / `AGENTS_HOME` 环境变量可覆盖）。今后仓库新增技能，重跑同一条命令即可带上。
-
-### 方式一（推荐）：npx 安装（需 Node ≥18）
+有 Node 18+ 的话用 npx 最省事：
 
 ```sh
-npx github:qianmang1/dsh-skills --target dsh      # 全量装 user-dsh（rank 400）
-npx github:qianmang1/dsh-skills --target agents   # 全量装 user-agents（rank 500）
+npx github:qianmang1/dsh-skills --target dsh      # 装到 .dsh
+npx github:qianmang1/dsh-skills --target agents   # 装到 .agents
 npx github:qianmang1/dsh-skills --target dsh --skill dsh-hermes-plugin   # 只装一个
 ```
 
-直接从本仓库运行安装器，无需发布到 npm registry。
-
-### 方式二：免 Node 脚本（Windows PowerShell）
+没有 Node 就用脚本：
 
 ```powershell
-# 全量装 user-dsh（rank 400）
-irm https://raw.githubusercontent.com/qianmang1/dsh-skills/main/install-dsh.ps1 | iex
-
-# 全量装 user-agents（rank 500）
-irm https://raw.githubusercontent.com/qianmang1/dsh-skills/main/install-agents.ps1 | iex
+# Windows PowerShell
+irm https://raw.githubusercontent.com/qianmang1/dsh-skills/main/install-dsh.ps1 | iex     # 装到 .dsh
+irm https://raw.githubusercontent.com/qianmang1/dsh-skills/main/install-agents.ps1 | iex  # 装到 .agents
 ```
-
-### 方式三：免 Node 脚本（Linux / macOS）
 
 ```sh
-# 全量装 user-dsh（rank 400）
-curl -fsSL https://raw.githubusercontent.com/qianmang1/dsh-skills/main/install-dsh.sh | sh
-
-# 全量装 user-agents（rank 500）
-curl -fsSL https://raw.githubusercontent.com/qianmang1/dsh-skills/main/install-agents.sh | sh
+# Linux / macOS
+curl -fsSL https://raw.githubusercontent.com/qianmang1/dsh-skills/main/install-dsh.sh | sh     # 装到 .dsh
+curl -fsSL https://raw.githubusercontent.com/qianmang1/dsh-skills/main/install-agents.sh | sh  # 装到 .agents
 ```
 
-> **信任边界**：`irm | iex` / `curl | sh` / `npx` 都意味着在本机执行仓库代码，仅在你信任本仓库时使用；也可先下载脚本查看再运行。`install-*.sh` 在 Windows 上不适用。
-
-<details>
-<summary>手动方式（git clone + 复制，不执行任何安装代码）</summary>
+`install-*.sh` 在 Windows 上用不了。另外 `irm | iex`、`curl | sh`、`npx` 都是在本机执行仓库代码，介意的话先看一遍脚本再跑，或者干脆手动来：
 
 ```sh
 git clone https://github.com/qianmang1/dsh-skills.git
-Copy-Item -Recurse dsh-skills/skills/dsh-hermes-plugin "$env:DSH_HOME\skills\"       # Windows，rank 400
-Copy-Item -Recurse dsh-skills/skills/dsh-hermes-plugin "$env:USERPROFILE\.agents\skills\"  # Windows，rank 500
-cp -r dsh-skills/skills/dsh-hermes-plugin "$DSH_HOME/skills/"                        # Linux/macOS，rank 400
-cp -r dsh-skills/skills/dsh-hermes-plugin ~/.agents/skills/                          # Linux/macOS，rank 500
+cp -r dsh-skills/skills/dsh-hermes-plugin ~/.dsh/skills/          # 或者 ~/.agents/skills/
 ```
 
-</details>
-
-### 丢给 Agent 的一键安装提示词
-
-把下面这段直接发给你的编码 agent，它会自动解析 `$DSH_HOME` 并安装到 user-dsh（rank 400）：
+不想自己动手，把这段话丢给 agent 也行：
 
 ```
 请帮我安装一个 DSH 技能：
@@ -89,24 +63,18 @@ cp -r dsh-skills/skills/dsh-hermes-plugin ~/.agents/skills/                     
 不要修改该技能目录内的任何文件内容。
 ```
 
-## 技能相互独立，无共享依赖；也可将 `skills/dsh-hermes-plugin` 复制进 deepseek-harness checkout 的 `.agents/skills/`（rank 200，仅项目内生效）。
+## 使用
 
-## 技能使用
+装好后直接对助手说需求就行，比如"帮我写一个 dsh 插件，功能是列出本地目录内容"，匹配到技能它会自己加载。也可以点名："用 dsh-hermes-plugin 这个技能生成插件"。
 
-安装后直接用自然语言描述需求即可自动触发，例如：
+## 加新技能
 
-> 帮我写一个 dsh-Hermes 插件，功能是列出本地目录内容。
+目录约定：`skills/<技能名>/SKILL.md` 必须有，`references/`、`assets/`、`scripts/` 按需放。加完在上面的表格里补一行。
 
-也可显式要求："使用 dsh-hermes-plugin skill 生成插件"。
-
-## 相关资源
+## 相关链接
 
 - dsh 官方文档：<https://github.com/deepseek-ai/deepseek-harness/tree/master/docs>
-- 插件打包与分发：`docs/user/develop/basic/publish.md`
-
-## 贡献
-
-新增技能时保持目录约定：`skills/<skill-name>/SKILL.md`（必需）+ `references/ assets/ scripts/`（可选），并在上表登记一行。
+- 插件打包与分发：见官方文档 `docs/user/develop/basic/publish.md`
 
 ## License
 
