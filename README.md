@@ -29,15 +29,32 @@ DSH 的本地技能提供方按 rank 顺序扫描各根目录（rank 高者被�
 
 项目根为包含 `.git` 的最近祖先目录；用户级 DSH 根会跳过其 `.system` 子目录。推荐安装到**用户级**两处（跨项目可用）：rank 400 `user-dsh` 或 rank 500 `user-agents`。
 
-### 方式一（推荐）：安装到 user-dsh（rank 400）
+### 方式一（推荐）：安装到 user-dsh（rank 400）—— 一条命令
 
-把技能目录放进 `<dshHome>/skills`（`<dshHome>` 即环境变量 `DSH_HOME` 指向的目录）：
+`DSH_HOME` 未设置时脚本自动回退到默认位置（Windows：`C:\Users\<用户名>\.dsh`；Linux/macOS：`~/.dsh`），已装过会先备份旧版本：
+
+```powershell
+# Windows PowerShell
+irm https://raw.githubusercontent.com/qianmang1/dsh-skills/main/install.ps1 | iex
+```
+
+```sh
+# Linux / macOS
+curl -fsSL https://raw.githubusercontent.com/qianmang1/dsh-skills/main/install.sh | sh
+```
+
+> 远端脚本直行（`irm | iex` / `curl | sh`）意味着在本机执行仓库代码，仅在你信任本仓库时使用；也可先下载脚本查看再运行。指定安装其他技能：`sh install.sh <技能名>`。
+
+<details>
+<summary>手动方式（git clone + 复制，不执行远端脚本）</summary>
 
 ```sh
 git clone https://github.com/qianmang1/dsh-skills.git
 Copy-Item -Recurse dsh-skills/skills/dsh-hermes-plugin "$env:DSH_HOME\skills\"   # Windows
 cp -r dsh-skills/skills/dsh-hermes-plugin "$DSH_HOME/skills/"                   # Linux/macOS
 ```
+
+</details>
 
 ### 方式二：安装到 user-agents（rank 500）
 
