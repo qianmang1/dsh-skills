@@ -1,0 +1,13 @@
+# 本 bundle 的配置层：profile 安装本 bundle 后按序应用。
+# 行格式与 --patch overlay 相同；name 用包名（Node 解析已安装代码），不用相对源路径。
+# 加载顺序中本层位于 dsh-base 之后、profile 自身 patch 之前；后层逐行胜出。
+# 注意：patch 替换整行 config 而非深合并——覆盖某个 id 必须重述该行全部 key。
+- insert:
+    - id: <PLUGIN_ID>
+      name: dsh-<PLUGIN_NAME>
+      # 需要消费服务时取消注释（依赖在 apply 前就绪，不依赖行顺序）：
+      # inject: [tools]
+      # 用户大概率保留的默认值放这里；其余交给插件 schema，用户可在
+      # profile 的 cordis.patch.yml 中覆盖本行（须重述全部 key）：
+      # config:
+      #   <key>: <value>
