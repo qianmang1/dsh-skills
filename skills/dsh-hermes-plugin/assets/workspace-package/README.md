@@ -6,7 +6,7 @@
 
 ```
 packages/<group>/<PLUGIN_NAME>/
-├── package.json     # 不变量：private/type:module/main/types/exports/files，
+├── package.json     # 不变量：发布形态(publishConfig.access: public，不设 private)/type:module/main/types/exports/files，
 │                    # cordis 同时在 peer+dev，schemastery 在 dependencies
 ├── tsconfig.json    # extends 根 tsconfig.base.json；references 指向 vendored 包
 ├── src/index.ts     # namespace 导出：name / inject / Config / apply

@@ -128,6 +128,14 @@ DSH 是否已有对应 seam（ctx.shell / ctx.fs / ctx.subprocess / …）？
 8. **timeout 必须处理**：工具定义挂 timeoutMs（tool-call-timeout-policy 经 signal 协作强制）或 schema 暴露 timeoutMs；terminate 升级用 seam graceMs。
 9. **CLI 未安装/缺失**：启动失败分类成稳定错误（SEARCH_FAILED 实证区分 launch failure / provider failure / abort）；不要静默。
 10. **Windows 路径不能假定 cwd**：exec.agent.session.header.cwd 是唯一事实来源；argv 向量天然免 shell quoting 的平台差异；展示路径相对 workdir 做 relativize（toWorkdirRelative 实证）。
+### CLI 输出环境不可靠：先建立稳定的机器输出环境
+
+外部 CLI 的输出常不为 Agent 设计。封装前检查：ANSI 色码、locale/数字格式、环境变量、配置文件、终端检测（TTY）、stdout 重定向是否改变输出。下列三条是本 Skill 在 dua 实战中验证并泛化的通用规则：
+
+11. **显式格式优先（固定输出契约）**：CLI 若支持 `--format` / `--json` / `--csv` / `--output` / `--machine-readable` 等显式格式选项，通过 Tool argv 显式固定（如 dua 恒带 `--format bytes`），不依赖 `DUA_FORMAT` 类环境变量或用户配置文件——目标：Agent Tool → 固定 argv → 固定输出契约，避免配置/环境/默认值造成行为漂移。注意：显式 flag 能否覆盖配置与环境变量，以该 CLI 的文档/实测为准，**不要假定所有 CLI 都如此**。
+12. **不要假设 `NO_COLOR`/终端探测一定生效**：若实测 stdout 含 ANSI（dua 即使重定向且设 `NO_COLOR` 仍输出色码），parser 必须走 `raw → strip → parse → validate → canonical`，并为该行为**至少加一个 ANSI 回归测试**；未实际输出 ANSI 的 CLI 不必 strip。
+13. **summary / total / footer 行不是契约**：外部 CLI 的汇总行可能只在部分输入出现（dua aggregate 对仅含文件的目录不打印 `total` 行，实测）。存在 → 校验后使用；缺失 → 用可证明的数据计算 fallback（如 entries 求和）；无法安全 fallback → 明确报错（`DUA_PARSE_FAILED` 风格）；**禁止缺行时猜测**。
+
 ## 5. 安全规范
 
 **禁止**：

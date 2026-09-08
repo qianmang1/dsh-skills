@@ -9,7 +9,7 @@ description: 根据用户的自然语言需求，自动生成符合 DeepSeek Har
 
 ## 知识库边界与文档回查
 
-> Skill 版本：v1.3（2026-09-08）；知识库提炼自 docs @ c389f96bf3 快照（dsh 0.1.3-alpha.2）。v1.3 新增 Tool Plugin 路由：`references/tool-plugin.md`（工具专属规范 + External CLI 决策树）、`assets/tool-plugin/`（工具 bundle 模板）、validator 工具检查与 checklist 工具节。
+> Skill 版本：v1.4（2026-09-08）；知识库提炼自 docs @ c389f96bf3 快照（dsh 0.1.3-alpha.2）。v1.3 新增 Tool Plugin 路由：`references/tool-plugin.md`（工具专属规范 + External CLI 决策树）、`assets/tool-plugin/`（工具 bundle 模板）、validator 工具检查与 checklist 工具节。v1.4 修复（dua 实战回灌）：workspace 发布形态与官方约束对齐（validator/spec.md/assets 模板——发布包不设 private，仅私有包 private: true 且省略 publishConfig）；tool-plugin.md §4 新增 External CLI 输出环境规则（规则 11-13：显式格式优先 / 不假设 NO_COLOR / summary 非契约）。
 
 本 Skill 的 references 是提炼后的**决策主干**，不是官方文档全量副本。生成代码遇到以下情况时必须回查官方文档（用 WebFetch/WebSearch 抓取对应 GitHub 页面）：
 

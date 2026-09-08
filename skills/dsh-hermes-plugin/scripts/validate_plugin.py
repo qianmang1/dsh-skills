@@ -197,7 +197,15 @@ def check_workspace(root: Path, pkg: dict, problems: list, warnings: list) -> No
         if not cond:
             problems.append((root / "package.json", 0, msg))
 
-    expect(pkg.get("private") is True, "workspace 包必须 `private: true`")
+    # 发布形态与官方约束一致（deepseek-harness scripts/check-workspace-constraints.ts）：
+    # 可发布包不设 private（或 private: false）并常配 publishConfig.access: public；
+    # 仅 experimental/内部包设 private: true，且必须省略 publishConfig。
+    # 因此不强制 private: true；只检查 private 与发布意图的矛盾组合。
+    if pkg.get("private") is True and pkg.get("publishConfig"):
+        problems.append((root / "package.json", 0,
+                         "`private: true` 的包同时声明了 publishConfig——私有包不会被"
+                         "发布；官方约束要求私有/experimental 包省略 publishConfig，"
+                         "可发布包则不设 private（配 publishConfig.access: public）"))
     expect(pkg.get("type") == "module", "必须 `\"type\": \"module\"`")
     expect(pkg.get("main") == "lib/index.js", "`main` 必须是 `lib/index.js`")
     expect(pkg.get("types") == "lib/types/index.d.ts",

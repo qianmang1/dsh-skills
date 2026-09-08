@@ -178,7 +178,7 @@ packages/<group>/<pkg>/
 ```
 
 package.json 强制不变量（`pnpm run constraints` 强制）：
-- `private: true`；`version` 与根 package.json 一致；`"type": "module"`
+- 发布形态与官方约束一致：可发布包不设 `private`（配 `publishConfig.access: public`，如 `packages/fs/tool-fs-search`）；仅 experimental/内部包 `private: true` 且省略 publishConfig。`version` 与根 package.json 一致；`"type": "module"`
 - `main: "lib/index.js"`、`types: "lib/types/index.d.ts"`
 - `exports["."] = { types: "./lib/types/index.d.ts", default: "./lib/index.js" }`
 - **`@deepseek-ai/cordis` 必须同时出现在 `peerDependencies` 和 `devDependencies`（同范围）**；每个 dsh peer 依赖镜像进 devDependencies
