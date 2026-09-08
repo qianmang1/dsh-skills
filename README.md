@@ -31,7 +31,7 @@ DSH 的本地技能提供方按 rank 顺序扫描各根目录（rank 高者被�
 
 ### 方式一（推荐）：安装到 user-dsh（rank 400）—— 一条命令
 
-`DSH_HOME` 未设置时脚本自动回退到默认位置（Windows：`C:\Users\<用户名>\.dsh`；Linux/macOS：`~/.dsh`），已装过会先备份旧版本：
+`DSH_HOME` 未设置时脚本自动回退到默认位置（Windows：`C:\Users\<用户名>\.dsh`；Linux/macOS：`~/.dsh`），已装过会先备份旧版本。安装脚本为「暂存区先下载校验、成功后才替换」的安全顺序（已在 Windows 真实环境实测通过）：
 
 ```powershell
 # Windows PowerShell
