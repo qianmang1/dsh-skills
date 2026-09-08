@@ -31,46 +31,15 @@ declare module '@deepseek-ai/cordis' {
 
 **辨析：durable session-event 类型不是 Cordis 事件**——`turn/*`、`step/*`、`tool/call`、`tool/result`、`compaction/*` 是持久会话事件**类型**；要观察它们须监听 Cordis 事件 `session/event` 并检查 `event.type`（`docs/user/develop/framework/events.md`）。
 
-## 2. 工具注册（defineTool，canonical value 模型）
+## 2. Tool Plugin（工具注册）
 
-```ts
-import type { Context } from '@deepseek-ai/cordis'
-import { defineTool } from '@deepseek-ai/dsh-tools'
+Tool Plugin 规范已独立成完整知识源：**详见 `references/tool-plugin.md`**（三种模式、基础契约、External CLI 决策树、安全、Output/Error、测试）。本文不再重复条文，避免双知识源漂移。
 
-export const name = 'my-tool'
-export const inject = ['tools']
+仅留路由索引：
 
-export function apply(ctx: Context) {
-  ctx.tools.register(defineTool({
-    name: 'read_file',
-    description: 'Read a file from disk.',          // 模型可见
-    parameters: {
-      path: { type: 'string', required: true, description: 'Absolute path' },
-      limit: { type: 'number' },                     // 默认可选
-    },
-    output: {
-      schema: { type: 'string' },                    // ValueSchemaSpec（root 可为 object/array/scalar/null）
-      render: (_args, value) => [{ type: 'text', text: value }],  // 模型面内容
-    },
-    async execute(args, exec) {
-      // args 依 schema 推断类型且已被校验；必须尊重 exec.signal
-      return readFile(args.path, { encoding: 'utf8', signal: exec.signal })
-    },
-  }))
-}
-```
-
-硬性契约（`docs/cookbook/adding-a-tool.md`）：
-- **`execute` 只返回一个 canonical JSON value**（依 `output.schema` 校验后 freeze），**不得返回 content blocks**；模型可见内容由 `output.render(args, value)` 投影。
-- **`exec` 身份不可变**：`callId / name / arguments / agent / token / signal`（必需，caller 持有）+ 可选 `parent` token；只有 around-dispatch 包装器可替换并恢复 `exec.signal`。
-- 可选 `output.presentationMeta(args, value)` 产出可回放卡片元数据（持久化于 `tool/result` 的 `result.meta`）。
-- **UI 卡片经 `presentCall`/`presentResult` 返回 card 标签的 render intent**（`generic/terminal/diff/read/search/web`），必须为**纯函数**（回放安全，不得 I/O）。
-- 注入上下文：`exec.agent.inject({ content, source: { kind: 'plugin', plugin: '<name>' } })`——下一个请求可见的持久注入，**不是唤醒**。
-- 后台长任务：`ctx.jobs.start({ kind, label, owner: exec.agent, run })`；发布 id 后取消走任务自有 signal，**不是 `exec.signal`**。
-- 注册借用 readonly 定义（注册后不得改动 schema/回调）；抛错或非法返回值 → `isError`。
-- **PTC 免费可用**：`await tools.<name>(args)` 解析为 canonical value 或真实 `ToolCallError`。
-- 执行策略不内建进工具，用事件链：`tools/pre-execute`（allow/deny/ask）→ `ctx.tools.guard()`（单调最终拒绝）→ `tools/execute`（包裹派发）→ `tools/post-execute`（变换结果）→ `tools/result`（只读观察不可变结局）。
-- MCP 来源的原始 JSON-Schema 工具可直接 `ctx.tools.register()`。
+- 入口：`inject = ['tools']` + `ctx.tools.register(defineTool({ name, description, parameters, output: { schema, render }, execute }))`
+- 只允许一个知识源：生成 Tool Plugin 时读 `tool-plugin.md`，签名逐字以官方 `docs/cookbook/adding-a-tool.md` 为准；本文档涉及工具执行策略的旁路（权限门见 §3 hook）不受影响。
+- MCP 来源的原始 JSON-Schema 工具可直接 `ctx.tools.register()`（tool-plugin.md §2 有注）。
 
 ## 3. hook（权限门）
 

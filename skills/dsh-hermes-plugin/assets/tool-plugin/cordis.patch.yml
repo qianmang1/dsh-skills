@@ -1,0 +1,7 @@
+# Tool Plugin 的配置层：profile 安装本 bundle 后按序应用。
+# 行格式与 --patch overlay 相同；name 用包名（Node 解析已安装代码）。
+# 工具注册在插件源码内（ctx.tools.register），本层只负责挂载插件行。
+# 生成时：替换 <PLUGIN_ID> 与 <PLUGIN_NAME>；如提供可调参数，加 config:
+- insert:
+    - id: <PLUGIN_ID>
+      name: dsh-<PLUGIN_NAME>

@@ -9,7 +9,7 @@ description: 根据用户的自然语言需求，自动生成符合 DeepSeek Har
 
 ## 知识库边界与文档回查
 
-> Skill 版本：v1.2（2026-09-08）；知识库提炼自 docs @ c389f96bf3 快照（dsh 0.1.3-alpha.2）。
+> Skill 版本：v1.3（2026-09-08）；知识库提炼自 docs @ c389f96bf3 快照（dsh 0.1.3-alpha.2）。v1.3 新增 Tool Plugin 路由：`references/tool-plugin.md`（工具专属规范 + External CLI 决策树）、`assets/tool-plugin/`（工具 bundle 模板）、validator 工具检查与 checklist 工具节。
 
 本 Skill 的 references 是提炼后的**决策主干**，不是官方文档全量副本。生成代码遇到以下情况时必须回查官方文档（用 WebFetch/WebSearch 抓取对应 GitHub 页面）：
 
@@ -34,22 +34,48 @@ description: 根据用户的自然语言需求，自动生成符合 DeepSeek Har
 | Context API 全表、类型签名 | `cordis-api/`、`cordis-tutorial/` |
 | 服务隔离、HMR、组合 | `user/develop/framework/service.md`、`cordis-tutorial/06-composition-and-hmr.md` |
 | 测试细节（fixture/snapshot/录制会话） | `testing.md` |
+| 工具注册/defineTool 契约、工具 schema | `cookbook/adding-a-tool.md`、`user/develop/basic/tool.md`、`tool-catalog.md`（tool-plugin.md 已提炼，签名逐字以文档为准） |
 
 规则：回查到的 API 签名逐字使用，不得凭记忆复述；仍未找到时按 spec.md 的命名规范自行设计并在交付说明中标注假设。
 
 ## 工作流
 
 1. **加载知识库（必做）**：先完整阅读 `references/spec.md`（核心规范：插件形态、生命周期、依赖注入、配置、命名）。再按需求补充：
-   - 涉及工具注册、事件监听、服务提供、hook、LLM adapter、UI → 读 `references/registries.md`
+   - **判定为 Tool Plugin → 先读 `references/tool-plugin.md`**（工具专属规范、三种模式、External CLI 决策树），注册起点用 `assets/tool-plugin/`
+   - 涉及事件监听、服务提供、hook、LLM adapter、UI 等其他注册面 → 读 `references/registries.md`
    - 涉及打包、分发、profile 安装 → 读 `references/distribution.md`
    - 交付前自检 → 读 `references/checklist.md`
-2. **分析需求并归类插件形态**：工具插件（defineTool）/ 服务插件（Service 子类 + provider）/ hook 权限门（pre-execute 监听）/ LLM adapter / UI 插件（监听 session/event）/ 纯行为插件。一个需求可组合多种形态，但保持单包。
+2. **形态路由（分析需求 → 归入一种形态，保持单包）**：以产物判据决定路由，不要从措辞猜测。
+
+   ```
+   Plugin
+   ├── Tool Plugin      模型可调用能力：注册到 ctx.tools、带参数 Schema
+   │     ├── Seam Consumer（消费 ctx.shell/fs/subprocess 等既有 seam）
+   │     ├── Spawn-backed（固定外部 CLI → ctx.subprocess.spawn，argv 向量）
+   │     └── New Seam（仅当需可替换后端/多 Provider 时才拆三角色）
+   ├── Service Plugin    向其他插件提供 ctx.<key> 服务（Service 子类 + 声明合并）
+   ├── Provider          Seam 的实现方（dsh-bash-local 模式）
+   ├── Consumer          消费既有服务的插件；以模型可调形式暴露时归入 Tool Plugin
+   ├── Hook / Permission 拦截点监听（tools/pre-execute 权限门等，extension-cookbook hook 形态）
+   ├── LLM Adapter       ctx.llm.registerAdapter
+   ├── UI / Client       session/event 渲染、ctx.slots/resources/sidebar 等注册面
+   └── 纯行为插件         其余默认（无对外注册面，仅日志/定时/编排）
+   ```
+
+   **Tool Plugin 路由（独立工作流入口）**——命中即走：`读 references/tool-plugin.md → 复制 assets/tool-plugin/ → 按其中步骤生成`。
+
+   - 触发：开发一个 DSH Tool / 给 Agent 增加模型可调用能力 / 把外部 CLI 接入 DSH / 把某个 API 接入 DSH 使模型能调用 / 让模型调用某个外部程序 / 创建带参数 Schema 的模型可调用能力。
+   - 不触发：只提供其他插件使用的 Service / Provider / Hook / UI / LLM Adapter / Agent Loop 修改 / 已存在等价 Tool 的重复封装（这些回到各自形态或提示复用内置工具）。
+   - 核心判据：**最终产物是否是一个注册到 `ctx.tools`、拥有模型可见名称与参数 Schema 的能力**。是 → Tool Plugin；否 → 上面其它形态。
+
+   其余形态的处理保持现状：服务插件（Service 子类 + provider）/ hook 权限门（pre-execute 监听）/ LLM adapter / UI 插件（监听 session/event）/ 纯行为插件，见 `references/registries.md` 对应节。一个需求可组合多种形态，但保持单包；工具形态细节一律以 `tool-plugin.md` 为准。
 3. **澄清（仅在阻塞时）**：只有当缺失的关键信息会导致生成不可用代码时才提问（例如：插件要消费哪个服务、分发形态是 bundle 还是 workspace 包），且一次问完、合并为单轮；能从需求合理推断的默认值直接采用并在产出说明中标注假设，不要追问。
 4. **选择工程形态并搭建**：
+   - **Tool Plugin** → 复制 `assets/tool-plugin/` 为起点（package.json + cordis.patch.yml + index.js，已含 `defineTool` 最小骨架、inject `tools`）。
    - 可分发插件（默认，官方"可直接部署"形态）→ 复制 `assets/bundle-plugin/` 为起点（package.json + cordis.patch.yml + index.js，占位符 `<PLUGIN_NAME>`/`<PLUGIN_ID>` 全部替换）。
-   - deepseek-harness 仓库内新包 → 复制 `assets/workspace-package/`（三角色拆分、tsconfig references 等遵循 `docs/cookbook/adding-a-package.md`，参考真实模板 `packages/shell/shell/`、`packages/shell/bash-local/`）。
-5. **生成代码**：严格套用 spec.md 与 registries.md 中的接口签名与真实代码模式；JSDoc 每个导出写简洁契约；strict TypeScript；从 workspace 包源码内相对导入带显式 `.ts` 后缀。
-6. **校验**：运行 `python scripts/validate_plugin.py <插件目录>`，修复全部 ERROR 后才算完成；WARNING 需逐条确认或在产出说明中解释。
+   - deepseek-harness 仓库内新包 → 复制 `assets/workspace-package/`（三角色拆分、tsconfig references 等遵循 `docs/cookbook/adding-a-package.md`，参考真实模板 `packages/shell/shell/`、`packages/shell/bash-local/`）；仓库内**工具包**另按 `tool-plugin.md` 补 `@deepseek-ai/dsh-tools` 的 peer+dev 依赖并套用 defineTool 骨架（参考真实包 `packages/fs/tool-fs-search/`、`packages/shell/tool-bash/`）。
+5. **生成代码**：严格套用 spec.md、registries.md 与 tool-plugin.md（工具形态）中的接口签名与真实代码模式；JSDoc 每个导出写简洁契约；strict TypeScript；从 workspace 包源码内相对导入带显式 `.ts` 后缀。
+6. **校验**：运行 `python scripts/validate_plugin.py <插件目录>`，修复全部 ERROR 后才算完成；WARNING 需逐条确认或在产出说明中解释。Tool Plugin 另按 `tool-plugin.md` §Testing & Verification 提供真实 composition 测试与 PTC 调用验证，并将验证结果写进交付说明。
 7. **输出**：结构化交付（见下）。
 
 ## 硬性约束（违反即返工）

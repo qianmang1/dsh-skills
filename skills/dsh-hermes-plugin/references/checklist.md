@@ -28,6 +28,25 @@
 12. **`!!js` 只出现在 entry 的 `config` 与 `disabled`**，其他元数据用 overlay（`verify-cordis-config` 会拒）。
 13. Client 插件不跨插件 value import（bundle-purity）；向他人槽位贡献用 `ctx.slots.inject()`；资源 provider 在自有 `ctx.effect` 内注册并尊重 `signal`。
 
+## Tool Plugin 专项（生成 Tool Plugin 时逐条核对；规范见 references/tool-plugin.md）
+
+- [ ] 已判断是否应使用 Tool Plugin（核心判据：产物是否注册 ctx.tools、有模型可见名称与参数 Schema）
+- [ ] 已优先检查现有 DSH seam（ctx.shell / ctx.fs / ctx.subprocess / ctx.terminals / ctx.sessionProjections…）——有匹配 seam 则消费，不重复实现执行
+- [ ] 固定外部 CLI 使用 ctx.subprocess.spawn（模式 B），未绕开 seam 直接 child_process
+- [ ] 使用 argv 数组而非 shell command 字符串；无 bash -c / cmd /c / PowerShell 插值拼用户输入
+- [ ] 参数 Schema 完整（type/required/description）；DSL 外约束（非空/正数/跨字段）在 execute 开头 validate
+- [ ] execute 只返回 canonical JSON value（不返回 content blocks；不经 execute 输出渲染文本）
+- [ ] output.schema 已定义（ValueSchemaSpec）
+- [ ] output.render 已定义（模型可见投影）
+- [ ] 错误 code 稳定（HarnessError 子类 + 包自有 code 词汇，isError 可机器分支）；正常非理想结果进 canonical
+- [ ] 已处理 timeout（工具定义/schema 暴露 + tool-call-timeout-policy 或显式超时）
+- [ ] 已处理 cancellation（exec.signal 转发/监听；后台任务发布后走 ctx.jobs 生命周期）
+- [ ] 输出有上限（maxBytes/条数 cap + truncated；超限走 ctx.spillStore 或 spill）
+- [ ] 存在真实 composition 测试（经 Loader + 测试 cordis.yml；integration.spec.ts 形态）
+- [ ] 已进行 PTC 调用验证（await tools.<name>(args) 解析 canonical / reject ToolCallError）
+
+机械可查项（validate_plugin.py 的 WARNING 提示）：inject 含 tools / 存在 execute / 存在 output。
+
 ## 常见禁忌（每条都有真实事故/文档依据）
 
 1. **`export default` 出现在 namespace 插件里** → Loader 丢 `inject`，运行时崩溃（postmortem 0001）。

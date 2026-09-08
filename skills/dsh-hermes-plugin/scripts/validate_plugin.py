@@ -10,6 +10,7 @@ docs/cookbook/adding-a-package.md、postmortem 0001）检查：
   - namespace 插件禁止 export default
   - Config 必须是 Schemastery schema（禁止普通对象）
   - yml 中禁止单个 !js（必须 !!js）
+  - ctx.tools 工具骨架提示（inject 声明 tools / execute / output，仅 WARNING）
 
 输出 ERROR / WARNING 行；存在 ERROR 时退出码 1。
 仅用标准库，无需第三方依赖。
@@ -117,6 +118,28 @@ def check_entry_sources(root: Path, problems: list, warnings: list) -> None:
                  f"疑似在代码内读取密钥文件——密钥必须走 Config + "
                  "`!!js process.env.X`")
             )
+
+        # Tool Plugin 轻量检查（仅 WARNING；不做脆弱 AST 假设，字面模式
+        # 可能误报，因此绝不升级为 ERROR）
+        if "ctx.tools.register" in code:
+            if not re.search(r"inject\s*=\s*\[[^\]]*['\"]tools['\"]", code):
+                warnings.append(
+                    (path, 0,
+                     f"检测到 ctx.tools.register 但未在 inject 中声明 'tools'——"
+                     "依赖未就绪会永远 PENDING，apply 不会运行")
+                )
+            if not re.search(r"\bexecute\s*\(", code):
+                warnings.append(
+                    (path, 0,
+                     f"检测到 ctx.tools.register 但未见 execute——execute 是工具"
+                     "执行入口，只返回 canonical JSON value（不得返回 content blocks）")
+                )
+            if not re.search(r"output\s*:", code):
+                warnings.append(
+                    (path, 0,
+                     f"检测到 ctx.tools.register 但未见 output 定义——需要 "
+                     "output.schema（canonical 值契约）+ output.render（模型可见投影）")
+                )
 
     if not seen_entry:
         problems.append((root, 0, "未找到插件入口（index.js 或 src/**.ts 中的 apply）"))
