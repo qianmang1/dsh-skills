@@ -9,10 +9,10 @@
     "url": "git+https://github.com/qianmang1/dsh-skills.git"
   },
   "bin": {
-    "dsh-skills": "bin/dsh-skills.mjs"
+    "dsh-skills": "scripts/dsh-skills.mjs"
   },
   "files": [
-    "bin/",
+    "scripts/",
     "skills/"
   ],
   "engines": {

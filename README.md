@@ -1,23 +1,23 @@
 # dsh-skills
 
-给 DeepSeek Harness（dsh）用的技能集合，目前有一个：
+DeepSeek Harness（dsh）个人使用技能集合
 
-| 技能 | 用途 |
-|---|---|
-| [dsh-hermes-plugin](skills/dsh-hermes-plugin/SKILL.md) | 说一句需求，自动生成符合 dsh 官方规范的完整插件工程（插件框架是 vendored Cordis）。知识库对应官方文档快照 `c389f96bf3`，dsh 0.1.3-alpha.2 |
+| 技能                                                     | 用途                                                                                            |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
+| [dsh-hermes-plugin](skills/dsh-hermes-plugin/SKILL.md) | 说一句需求，自动生成符合 dsh 官方规范的完整插件工程（插件框架是 vendored Cordis）。目前对应官方文档快照 `c389f96bf3`，dsh 0.1.3-alpha.2 |
 
 ## 安装
 
 dsh 会按顺序扫描几个技能目录，rank 高的先被发现：
 
-| Rank | 位置 |
-|---|---|
-| 100 | `<projectRoot>/.dsh/skills` |
-| 200 | `<projectRoot>/.agents/skills` |
-| 300 | `Config.customSkillDirs` |
+| Rank    | 位置                                                         |
+| ------- | ---------------------------------------------------------- |
+| 100     | `<projectRoot>/.dsh/skills`                                |
+| 200     | `<projectRoot>/.agents/skills`                             |
+| 300     | `Config.customSkillDirs`                                   |
 | **400** | **`<dshHome>/skills`**，即 `C:\Users\<用户名>\.dsh`（或 `~/.dsh`） |
-| **500** | **`<agentsHome>/skills`**，即 `~/.agents` |
-| 600 | `Config.bundledSkillDir` |
+| **500** | **`<agentsHome>/skills`**，即 `~/.agents`                    |
+| 600     | `Config.bundledSkillDir`                                   |
 
 装到 400 或 500 都能跨项目使用，`.dsh` 和 `.agents` 选一个就够了。装进 deepseek-harness 仓库自己的 `.agents/skills/`（rank 200）只在那个项目里生效。
 
@@ -28,21 +28,21 @@ dsh 会按顺序扫描几个技能目录，rank 高的先被发现：
 ```sh
 npx github:qianmang1/dsh-skills --target dsh      # 装到 .dsh
 npx github:qianmang1/dsh-skills --target agents   # 装到 .agents
-npx github:qianmang1/dsh-skills --target dsh --skill dsh-hermes-plugin   # 只装一个
+npx github:qianmang1/dsh-skills --target dsh --skill <技能名称>   # 只装某一个技能
 ```
 
 没有 Node 就用脚本：
 
 ```powershell
 # Windows PowerShell
-irm https://raw.githubusercontent.com/qianmang1/dsh-skills/main/install-dsh.ps1 | iex     # 装到 .dsh
-irm https://raw.githubusercontent.com/qianmang1/dsh-skills/main/install-agents.ps1 | iex  # 装到 .agents
+irm https://raw.githubusercontent.com/qianmang1/dsh-skills/main/scripts/install-dsh.ps1 | iex     # 装到 .dsh
+irm https://raw.githubusercontent.com/qianmang1/dsh-skills/main/scripts/install-agents.ps1 | iex  # 装到 .agents
 ```
 
 ```sh
 # Linux / macOS
-curl -fsSL https://raw.githubusercontent.com/qianmang1/dsh-skills/main/install-dsh.sh | sh     # 装到 .dsh
-curl -fsSL https://raw.githubusercontent.com/qianmang1/dsh-skills/main/install-agents.sh | sh  # 装到 .agents
+curl -fsSL https://raw.githubusercontent.com/qianmang1/dsh-skills/main/scripts/install-dsh.sh | sh     # 装到 .dsh
+curl -fsSL https://raw.githubusercontent.com/qianmang1/dsh-skills/main/scripts/install-agents.sh | sh  # 装到 .agents
 ```
 
 `install-*.sh` 在 Windows 上用不了。另外 `irm | iex`、`curl | sh`、`npx` 都是在本机执行仓库代码，介意的话先看一遍脚本再跑，或者干脆手动来：
