@@ -27,47 +27,53 @@ DSH 的本地技能提供方按 rank 顺序扫描各根目录（rank 高者被�
 | **500** | **user-agents** | **`<agentsHome>/skills`** |
 | 600 | bundled | 配置了 `Config.bundledSkillDir` 时使用 |
 
-项目根为包含 `.git` 的最近祖先目录；用户级 DSH 根会跳过其 `.system` 子目录。推荐安装到**用户级**两处（跨项目可用）：rank 400 `user-dsh` 或 rank 500 `user-agents`。
+项目根为包含 `.git` 的最近祖先目录；用户级 DSH 根会跳过其 `.system` 子目录。推荐安装到**用户级**两处（跨项目可用）：rank 400 `user-dsh` 或 rank 500 `user-agents`。**每个目标各一条命令，互不混杂。**
 
-### 方式一（推荐）：安装到 user-dsh（rank 400）—— 一条命令
+所有安装途径均为「暂存区先下载校验、成功后才替换」的安全顺序；目标已存在时自动备份旧版本（时间戳后缀）。默认路径：`.dsh` → Windows `C:\Users\<用户名>\.dsh` / Linux·macOS `~/.dsh`；`.agents` → `~/.agents`（`DSH_HOME` / `AGENTS_HOME` 环境变量可覆盖）。
 
-`DSH_HOME` 未设置时脚本自动回退到默认位置（Windows：`C:\Users\<用户名>\.dsh`；Linux/macOS：`~/.dsh`），已装过会先备份旧版本。安装脚本为「暂存区先下载校验、成功后才替换」的安全顺序（已在 Windows 真实环境实测通过）：
-
-```powershell
-# Windows PowerShell
-irm https://raw.githubusercontent.com/qianmang1/dsh-skills/main/install.ps1 | iex
-```
+### 方式一（推荐）：npx 安装（需 Node ≥18）
 
 ```sh
-# Linux / macOS
-curl -fsSL https://raw.githubusercontent.com/qianmang1/dsh-skills/main/install.sh | sh
+npx github:qianmang1/dsh-skills --target dsh      # 装 user-dsh（rank 400）
+npx github:qianmang1/dsh-skills --target agents   # 装 user-agents（rank 500）
 ```
 
-> 远端脚本直行（`irm | iex` / `curl | sh`）意味着在本机执行仓库代码，仅在你信任本仓库时使用；也可先下载脚本查看再运行。指定安装其他技能：`sh install.sh <技能名>`。
+直接从本仓库运行安装器，无需发布到 npm registry。可选参数：`--skill <名称>` 安装其他技能。
+
+### 方式二：免 Node 脚本（Windows PowerShell）
+
+```powershell
+# 装 user-dsh（rank 400）
+irm https://raw.githubusercontent.com/qianmang1/dsh-skills/main/install-dsh.ps1 | iex
+
+# 装 user-agents（rank 500）
+irm https://raw.githubusercontent.com/qianmang1/dsh-skills/main/install-agents.ps1 | iex
+```
+
+### 方式三：免 Node 脚本（Linux / macOS）
+
+```sh
+# 装 user-dsh（rank 400）
+curl -fsSL https://raw.githubusercontent.com/qianmang1/dsh-skills/main/install-dsh.sh | sh
+
+# 装 user-agents（rank 500）
+curl -fsSL https://raw.githubusercontent.com/qianmang1/dsh-skills/main/install-agents.sh | sh
+```
+
+> **信任边界**：`irm | iex` / `curl | sh` / `npx` 都意味着在本机执行仓库代码，仅在你信任本仓库时使用；也可先下载脚本查看再运行。`install-*.sh` 在 Windows 上不适用；`npx skills@latest add`（skills.sh 第三方安装器）对 DSH 发现目录的支持未验证，不在承诺路径内。
 
 <details>
-<summary>手动方式（git clone + 复制，不执行远端脚本）</summary>
+<summary>手动方式（git clone + 复制，不执行任何安装代码）</summary>
 
 ```sh
 git clone https://github.com/qianmang1/dsh-skills.git
-Copy-Item -Recurse dsh-skills/skills/dsh-hermes-plugin "$env:DSH_HOME\skills\"   # Windows
-cp -r dsh-skills/skills/dsh-hermes-plugin "$DSH_HOME/skills/"                   # Linux/macOS
+Copy-Item -Recurse dsh-skills/skills/dsh-hermes-plugin "$env:DSH_HOME\skills\"       # Windows，rank 400
+Copy-Item -Recurse dsh-skills/skills/dsh-hermes-plugin "$env:USERPROFILE\.agents\skills\"  # Windows，rank 500
+cp -r dsh-skills/skills/dsh-hermes-plugin "$DSH_HOME/skills/"                        # Linux/macOS，rank 400
+cp -r dsh-skills/skills/dsh-hermes-plugin ~/.agents/skills/                          # Linux/macOS，rank 500
 ```
 
 </details>
-
-### 方式二：安装到 user-agents（rank 500）
-
-放进 `<agentsHome>/skills`（通常为 `~/.agents/skills`，与 mattpocock/skills 等 `.agents` 生态技能同一位置）：
-
-```sh
-Copy-Item -Recurse dsh-skills/skills/dsh-hermes-plugin "$env:USERPROFILE\.agents\skills\"  # Windows
-cp -r dsh-skills/skills/dsh-hermes-plugin ~/.agents/skills/                                # Linux/macOS
-```
-
-### 方式三（实验性）：npm 生态安装器
-
-`npx skills@latest add qianmang1/dsh-skills`（skills.sh CLI，与 [mattpocock/skills](https://github.com/mattpocock/skills) 同一套安装机制）。本仓库的 `skills/<name>/SKILL.md` 目录结构与其兼容，但该安装器对 DSH 发现目录的支持**尚未验证**，装完请确认文件落在 rank 400/500 的根下。
 
 ### 丢给 Agent 的一键安装提示词
 

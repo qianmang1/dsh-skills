@@ -1,0 +1,21 @@
+{
+  "name": "dsh-skills",
+  "version": "1.2.0",
+  "description": "DeepSeek Harness (dsh) skills collection - installer CLI for user-dsh/user-agents skill dirs",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/qianmang1/dsh-skills.git"
+  },
+  "bin": {
+    "dsh-skills": "bin/dsh-skills.mjs"
+  },
+  "files": [
+    "bin/",
+    "skills/"
+  ],
+  "engines": {
+    "node": ">=18"
+  }
+}
