@@ -5,6 +5,14 @@ DeepSeek Harness（dsh）个人使用技能集合
 | 技能                                                     | 用途                                                                                            |
 | ------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
 | [dsh-hermes-plugin](skills/dsh-hermes-plugin/SKILL.md) | 说一句需求，自动生成符合 dsh 官方规范的完整插件工程（插件框架是 vendored Cordis）。目前对应官方文档快照 `c389f96bf3`，dsh 0.1.3-alpha.2 |
+| [archify](skills/archify/SKILL.md)                       | 架构、流程、时序、数据流、生命周期图，输出可交互独立 HTML（可导出 PNG/SVG）                     |
+| [blender-addon-cn](skills/blender-addon-cn/SKILL.md)     | 第三方 Blender 插件中文本地化，产出不改官方文件的汉化补丁扩展                                   |
+| [dsh-build-husk-triage](skills/dsh-build-husk-triage/SKILL.md)  | DSH 构建空壳（orphan husk）导致 MISSING_EXPORT / UNRESOLVED_IMPORT 的排障                       |
+| [dsh-caveman](skills/dsh-caveman/SKILL.md)               | 极简输出模式，档位 lite / full / ultra / wenyan                                                 |
+| [dsh-project-init](skills/dsh-project-init/SKILL.md)     | 为新仓库生成与官方 DSH 同构的 AGENTS.md 与 .agents 规则骨架                                     |
+| [ponytail](skills/ponytail/SKILL.md)                     | 写代码时反过度设计：砍代码量、YAGNI、复用优先、diff 最小                                        |
+| [search-filter](skills/search-filter/SKILL.md)           | 引用搜索结果前的三闸过滤：白名单、仿冒拒收、降级                                                |
+| [skill-maker](skills/skill-maker/SKILL.md)               | 创建、改造或评审技能包（SKILL.md 四节 + 渐进式披露）                                            |
 
 ## 安装
 
