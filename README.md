@@ -5,6 +5,8 @@ DeepSeek Harness（dsh）个人使用技能集合
 | 技能                                                     | 用途                                                                                            |
 | ------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
 | [dsh-hermes-plugin](skills/dsh-hermes-plugin/SKILL.md) | 说一句需求，自动生成符合 dsh 官方规范的完整插件工程（插件框架是 vendored Cordis）。目前对应官方文档快照 `c389f96bf3`，dsh 0.1.3-alpha.2 |
+| [aliyun-cli](skills/aliyun-cli/SKILL.md)               | 用本机 `aliyun` CLI 安全查询与操作云资源：按实时帮助选命令、保留 profile/region、写操作先确认。技能版本 0.1.2 |
+| [aliyun-cli-setup](skills/aliyun-cli-setup/SKILL.md)   | 检查/安装阿里云 CLI、复用或配置凭证 profile、验证调用者身份（新凭证优先本机 OAuth）。技能版本 0.1.2 |
 
 ## 安装
 
